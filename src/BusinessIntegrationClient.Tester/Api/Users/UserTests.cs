@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BusinessIntegrationClient.Tester.TestFixtures;
 using NUnit.Framework;
 using RequirementsLive.Sdk.Api.Business.Dto;
@@ -75,7 +76,7 @@ namespace BusinessIntegrationClient.Tester.Api.Users
                         //list of already existing organization Id this user will have access to
                         OrganizationIds = new List<string>
                         {
-                            "Organization123"
+                            //"Organization123"
                         },
                         //list of already existing location ids for this user.
                         LocationIds = new List<string>
@@ -134,7 +135,7 @@ namespace BusinessIntegrationClient.Tester.Api.Users
 
         [TestCase(null)]
         [TestCase("1=1")]
-        [TestCase("Status = 'Active'")]
+        [TestCase("Status = 'Approved'")]
         public void CountUsers(string filter)
         {
             var request = new CountObjects
@@ -151,8 +152,8 @@ namespace BusinessIntegrationClient.Tester.Api.Users
 
         [TestCase(null)]
         [TestCase("1=1")]
-        [TestCase("Status = 'Inactive'")]
-        [TestCase("Status = 'Active'")]
+        [TestCase("Status = 'Approved'")]
+        [TestCase("Status = 'Deleted'")]
         public void ListUsersByFilter(string filter)
         {
             var request = new ListObjects
@@ -166,6 +167,29 @@ namespace BusinessIntegrationClient.Tester.Api.Users
             var message = FormatListObjectsResponse(request, response);
 
             Console.WriteLine(message);
+        }
+
+        [Test]
+        public void ListActiveUserNames()
+        {
+            var request = new ListObjects
+            {
+                AppName = UserAppName,
+                Filter = "Status = 'Approved'",
+                Properties = new List<string> { "User_Name" }
+            };
+
+            var response = ApiClient.ListObjects(request);
+
+            var activeUserNames = response.Items
+                .Select(i => i["User_Name"])
+                .ToList();
+            
+            CollectionAssert.IsNotEmpty(activeUserNames);
+            CollectionAssert.Contains(activeUserNames, Credential.UserName);
+
+            //TODO: mark the ones that should be active as deleted.
+
         }
 
         [Test]

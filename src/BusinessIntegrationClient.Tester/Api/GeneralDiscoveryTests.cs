@@ -80,7 +80,7 @@ namespace BusinessIntegrationClient.Tester.Api
         [TestCase("INVALID APP NAME", null,
             ExpectedException = typeof(WebServiceException),
             Reason = "invalid app name")]
-        [TestCase("User", "Status = 'Active'")]
+        [TestCase("User", "Status = 'Approved'")]
         [TestCase("User", "Status = 'Deleted'")]
         [TestCase("User", "Status = 'Missing Apostrophe",
             ExpectedException = typeof(WebServiceException),
