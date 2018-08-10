@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Comment CommentText="DTOs">
+    <Position X="14.417" Y="0.521" Height="0.448" Width="0.971" />
+  </Comment>
+  <Class Name="BusinessIntegrationClient.RestfulBusinessApiClient">
+    <Position X="5.25" Y="1.25" Width="2.5" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BusinessIntegrationClient.RqlApiConfiguration">
+    <Position X="2" Y="1" Width="1.75" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.BusinessApiExtensions">
+    <Position X="8.75" Y="1.25" Width="2" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.Address" Collapsed="true">
+    <Position X="15.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.Asset" Collapsed="true">
+    <Position X="18" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.ContactType" Collapsed="true">
+    <Position X="21.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.CountryInfo" Collapsed="true">
+    <Position X="15.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.EntityTypeInfo" Collapsed="true">
+    <Position X="18" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.Location" Collapsed="true">
+    <Position X="19.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.Organization" Collapsed="true">
+    <Position X="21.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.OrganizationReference" Collapsed="true">
+    <Position X="15.75" Y="2.5" Width="2" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.ProfileInfo" Collapsed="true">
+    <Position X="18" Y="2.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.StateInfo" Collapsed="true">
+    <Position X="19.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.AssociatedEntity" Collapsed="true">
+    <Position X="19.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.User">
+    <Position X="21.5" Y="2.5" Width="2.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="BusinessIntegrationClient.Dtos.UserSummary">
+    <Position X="15.75" Y="3.5" Width="2" />
+    <TypeIdentifier />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

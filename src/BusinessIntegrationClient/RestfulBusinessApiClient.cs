@@ -1,0 +1,311 @@
+﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using log4net;
+
+namespace BusinessIntegrationClient
+{
+    /// <summary>
+    ///     Manages an <see cref="HttpClient" /> instance, making the necessary RESTful business API calls easier to invoke.
+    /// </summary>
+    public class RestfulBusinessApiClient : IDisposable
+    {
+        private const string AuthorizationHeaderName = "Authorization";
+        private const string TimestampHeaderName = "Timestamp";
+
+        private static readonly ILog Logger = LogManager.GetLogger(typeof(RestfulBusinessApiClient).Name);
+
+        private readonly RqlApiConfiguration _apiConfig;
+        private readonly HttpClient _httpClient;
+
+
+        private DateTime _authenticationTicketIssued;
+        
+        /// <summary>
+        /// Constructs a new instance of <see cref="RestfulBusinessApiClient"/>
+        /// </summary>
+        /// <param name="apiConfig"></param>
+        public RestfulBusinessApiClient(RqlApiConfiguration apiConfig)
+        {
+            if (apiConfig == null) throw new ArgumentNullException("apiConfig");
+            if (string.IsNullOrEmpty(apiConfig.Site))
+                throw new ArgumentException("SiteName cannot be null or empty", "apiConfig");
+            if (string.IsNullOrEmpty(apiConfig.UserName))
+                throw new ArgumentException("UserName cannot be null or empty", "apiConfig");
+            if (string.IsNullOrEmpty(apiConfig.Password))
+                throw new ArgumentException("Password cannot be null or empty", "apiConfig");
+
+            _apiConfig = apiConfig;
+
+            _httpClient = CreateHttpClient(apiConfig);
+
+            EnableTls();
+        }
+
+        void IDisposable.Dispose()
+        {
+            _httpClient.Dispose();
+        }
+
+        private void EnableTls()
+        {
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 |
+                                                    SecurityProtocolType.Tls12;
+        }
+
+        /// <summary>
+        ///     Re-authenticates the api client connection if the authentication ticket is nearing expiration.
+        /// </summary>
+        /// <remarks>
+        ///     This method is provided to prevent long running processes from failing because the API client instance has expired.
+        /// </remarks>
+        public void ReauthenticateIfNearingExpiration()
+        {
+            var reauthenticate = (DateTime.Now - _authenticationTicketIssued).TotalMinutes >= 30;
+            if (reauthenticate)
+                lock (this)
+                {
+                    reauthenticate = (DateTime.Now - _authenticationTicketIssued).TotalMinutes >= 30;
+
+                    if (reauthenticate)
+                        try
+                        {
+                            Authenticate();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error("Unable to re-authenticate the API connection. Exception:", ex);
+                            throw;
+                        }
+                }
+        }
+
+        public void Authenticate()
+        {
+            var authenticateUrl = CreateAuthenticationUrl(_apiConfig);
+
+            var content = CreateJsonStringContent(new
+            {
+                _apiConfig.UserName,
+                _apiConfig.Password
+            }.ToJson());
+
+            var response = _httpClient.PostAsync(authenticateUrl, content).Result;
+
+            response.EnsureSuccessStatusCode();
+
+            var authorization = response.Content.ReadAsStringAsync().Result
+                .FromJson<AuthenticateResponse>();
+
+            //note: despite the name, response.TicketExpires actually returns "DateTime.UtcNow" from the server side, 
+            //making this the time the server issued the ticket, rather than when it expires. 
+            //The server has logic internally to consider tickets expired.
+            _authenticationTicketIssued = authorization.TicketExpires.FromRfc1123().ToLocalTime();
+
+
+            _httpClient.DefaultRequestHeaders.Remove(AuthorizationHeaderName);
+            _httpClient.DefaultRequestHeaders.Remove(TimestampHeaderName);
+
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(AuthorizationHeaderName, authorization.Ticket);
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(TimestampHeaderName, authorization.TicketExpires);
+        }
+
+        private static Uri CreateBaseAddressUri(RqlApiConfiguration apiConfig)
+        {
+            var uri = new UriBuilder(apiConfig.UseSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp,
+                apiConfig.Site, apiConfig.Port, "api/biz/");
+
+            return uri.Uri;
+        }
+
+        private static string CreateAuthenticationUrl(RqlApiConfiguration apiConfig)
+        {
+            var uri = new UriBuilder(apiConfig.UseSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp,
+                apiConfig.Site, apiConfig.Port, "api/Authenticate");
+
+            return uri.ToString();
+        }
+
+        private HttpClient CreateHttpClient(RqlApiConfiguration apiConfig)
+        {
+            var httpClient = new HttpClient
+            {
+                BaseAddress = CreateBaseAddressUri(apiConfig),
+                Timeout = apiConfig.RequestTimeout
+            };
+            if (!string.IsNullOrEmpty(apiConfig.UserAgent))
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(apiConfig.UserAgent);
+
+            httpClient.DefaultRequestHeaders.Accept
+                .Add(new MediaTypeWithQualityHeaderValue(ContentType.Json)); //ACCEPT header
+
+
+            return httpClient;
+        }
+
+        private string SendJsonRequest(HttpMethod method, string url, string requestBody)
+        {
+            var response = SendJsonRequest<string>(method, url, requestBody);
+
+            return response;
+        }
+
+        private T SendJsonRequest<T>(HttpMethod method, string url,
+            string requestBody)
+            where T : class
+        {
+            ReauthenticateIfNearingExpiration();
+
+            using (var content = CreateJsonStringContent(requestBody))
+            using (var requestMessage = CreateJsonRequestMessage(method, url, content))
+            {
+                Logger.DebugFormat("Sending {0} request: url: {1}, Body: {2}", method, url, requestBody);
+
+                var response = _httpClient.SendAsync(requestMessage).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.DebugFormat("Response: {0} - {1}", response.StatusCode, response.ReasonPhrase);
+                }
+                response.EnsureSuccessStatusCode();
+
+                var responseJson = response.Content.ReadAsStringAsync().Result;
+
+                Logger.DebugFormat("Response: {0}", responseJson);
+
+                var result = typeof(T) == typeof(string)
+                    ? responseJson as T
+                    : responseJson.FromJson<T>();
+
+                return result;
+            }
+        }
+
+        private HttpContent CreateJsonStringContent(string requestBody)
+        {
+            if (string.IsNullOrEmpty(requestBody)) return null;
+
+            return new StringContent(requestBody, Encoding.UTF8, ContentType.Json);
+        }
+
+        private HttpRequestMessage CreateJsonRequestMessage(HttpMethod method, string url, HttpContent content)
+        {
+            return new HttpRequestMessage(method, url)
+            {
+                Headers = {{"Accept", ContentType.Json}},
+                Content = content
+            };
+        }
+
+        /// <summary>
+        ///     Issues a GET request to the specified URL, returning the response body as a string.
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        /// <returns></returns>
+        public string GetJson(string relativeUrl)
+        {
+            return GetJson<string>(relativeUrl);
+        }
+
+        /// <summary>
+        ///     Issues a GET request to the specified URL, returing an instance of <see cref="TResponse" /> that has been
+        ///     deserialized from JSON.
+        /// </summary>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="relativeUrl"></param>
+        /// <returns></returns>
+        public TResponse GetJson<TResponse>(string relativeUrl) where TResponse : class
+        {
+            return SendJsonRequest<TResponse>(HttpMethod.Get, relativeUrl, string.Empty);
+        }
+
+        /// <summary>
+        ///     Issues a POST request to the specified URL, returning the response body as a string.
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public string PostJson(string relativeUrl, object data)
+        {
+            return PostJson<string>(relativeUrl, data);
+        }
+
+        /// <summary>
+        ///     Issues a POST request to the specified URL, returning an instance of <see cref="TResponse" /> that has been
+        ///     deserialized from JSON.
+        /// </summary>
+        /// <typeparam name="TResponse"></typeparam>
+        /// <param name="relativeUrl"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public TResponse PostJson<TResponse>(string relativeUrl, object data) where TResponse : class
+        {
+            return SendJsonRequest<TResponse>(HttpMethod.Post, relativeUrl, data.ToJson());
+        }
+
+        /// <summary>
+        ///     Issues a PUT request to the specified URL, returning the response body as a string.
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public string PutJson(string relativeUrl, object data)
+        {
+            return PutJson<string>(relativeUrl, data);
+        }
+
+        /// <summary>
+        ///     Issues a PUT request to the specified URL, returning an instance of <see cref="TResponse" /> that has been
+        ///     deserialized from JSON.
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public TResponse PutJson<TResponse>(string relativeUrl, object data) where TResponse : class
+        {
+            return SendJsonRequest<TResponse>(HttpMethod.Put, relativeUrl, data.ToJson());
+        }
+
+        /// <summary>
+        ///     Issues a DELETE request
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public string DeleteJson(string relativeUrl, object data)
+        {
+            return SendJsonRequest<string>(HttpMethod.Delete, relativeUrl, data.ToJson());
+        }
+
+        /// <summary>
+        ///     Issues a DELETE request to the specified URL.
+        /// </summary>
+        /// <param name="relativeUrl"></param>
+        public void Delete(string relativeUrl)
+        {
+            //DeleteAsync(relativeUrl).RunSynchronously();
+            SendJsonRequest(HttpMethod.Delete, relativeUrl, string.Empty);
+        }
+
+        /// <summary>
+        ///     Represents the response object for the Authenticate API method
+        /// </summary>
+        private class AuthenticateResponse
+        {
+            /// <summary>
+            ///     The authentication ticket
+            /// </summary>
+            public string Ticket { get; set; }
+
+            /// <summary>
+            ///     The date the ticket was issued (is named wrong).
+            /// </summary>
+            /// <remarks>
+            ///     Is in RFC 1123 format.
+            /// </remarks>
+            public string TicketExpires { get; set; }
+        }
+    }
+}

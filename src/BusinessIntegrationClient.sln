@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessIntegrationClient.Tester", "BusinessIntegrationClient.Tester\BusinessIntegrationClient.Tester.csproj", "{D57A0885-266C-429C-BE48-4EAA1985E3AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessIntegrationClient", "BusinessIntegrationClient\BusinessIntegrationClient.csproj", "{B05DC004-82BC-47AC-9D56-CC82D76C3996}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D57A0885-266C-429C-BE48-4EAA1985E3AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D57A0885-266C-429C-BE48-4EAA1985E3AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D57A0885-266C-429C-BE48-4EAA1985E3AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D57A0885-266C-429C-BE48-4EAA1985E3AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B05DC004-82BC-47AC-9D56-CC82D76C3996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B05DC004-82BC-47AC-9D56-CC82D76C3996}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B05DC004-82BC-47AC-9D56-CC82D76C3996}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B05DC004-82BC-47AC-9D56-CC82D76C3996}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
