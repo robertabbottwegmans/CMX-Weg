@@ -45,7 +45,7 @@ namespace BusinessIntegrationClient.Tester
         /// <remarks>
         ///     Different Data Firewall rules can exist for internal/external user profile types.
         /// </remarks>
-        private const string InternalProfileId = "Auditor";
+        private const string InternalProfileId = "Procurement";//"Auditor";
 
         /// <summary>
         ///     A Profile Id for an Internal user profile type. See Permissions Management->Profiles
@@ -62,6 +62,14 @@ namespace BusinessIntegrationClient.Tester
         ///     Different Data Firewall rules can exist for internal/external user profile types.
         /// </remarks>
         private const string ExternalProfileId = "Supplier";
+
+        /// <summary>
+        ///     A Profile Id for an External user profile type. See Permissions Management->Profiles
+        /// </summary>
+        /// <remarks>
+        ///     Different Data Firewall rules can exist for internal/external user profile types.
+        /// </remarks>
+        private const string ExternalProfileId2 = "Lab Tester";
 
         private List<string> _allContactTypeIds;
         private List<EntityReference> _allEntities;
@@ -239,7 +247,7 @@ namespace BusinessIntegrationClient.Tester
         [Test]
         public void GetJson_UserByUserName_GetsUserAsJsonString()
         {
-            var getUserUrl = "User/" + TestUserName1;
+            var getUserUrl = "Users/" + TestUserName1;
 
             var result = _api.GetJson<string>(getUserUrl);
 
@@ -251,7 +259,7 @@ namespace BusinessIntegrationClient.Tester
         [Test]
         public void GetJson_UserByUserName_GetsUserAsTypedDto()
         {
-            var getUserUrl = "User/" + TestUserName1;
+            var getUserUrl = "Users/" + TestUserName1;
 
             var result = _api.GetJson<User>(getUserUrl);
 
@@ -319,7 +327,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetUser("no such user name. 21-908i3-0941iir.109 i.0r..i");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
         }
 
         [TestCase("CTM_625_retest_1")]
@@ -415,7 +423,7 @@ namespace BusinessIntegrationClient.Tester
             var ex = Assert.Throws<HttpRequestException>(() => { _api.PostUser(user); });
 
             Assert.That(ex.Message, Is.StringContaining("UserName not provided").IgnoreCase
-                .Or.StringContaining("Not Authorized").IgnoreCase);
+                .Or.StringContaining("Invalid Request").IgnoreCase);
         }
 
         [Test]
@@ -687,6 +695,75 @@ namespace BusinessIntegrationClient.Tester
                 Has.Some.Matches((EntityReference e) => e.Id == _allEntities[1].Id));
             Assert.That(result.AccessibleEntities,
                 Has.Some.Matches((EntityReference e) => e.Id == _allEntities[2].Id));
+
+        }
+
+        [Test]
+        [Explicit(
+            "This test expects two organzation to exists with specific Org ID")]
+        public void PutUser_TwoCorporateForAssicatedEntities_ThrowsException()
+        {
+            var user = _api.GetUser(TestUserName5);
+
+            user.AssociatedEntities = new List<EntityReference>()
+            {
+                new EntityReference("50876", "Supplier"),
+                new EntityReference("70898", "Supplier")
+            };
+            user.AccessibleEntities = _allEntities;
+
+
+            var ex = Assert.Throws<HttpRequestException>(() => { _api.PutUser(user); });
+
+            Assert.That(ex.Message, Is.StringContaining("Cannot provided two corporate entities for a user").IgnoreCase);
+
+        }
+
+        [Test]
+        [Explicit(
+            "This test expects one organzation and one location that is the child of the organization")]
+        public void PutUser_OneCorporateAndOneLocationForAssicatedEntities_ThrowsException()
+        {
+            var user = _api.GetUser(TestUserName5);
+
+            user.AssociatedEntities = new List<EntityReference>()
+            {
+                new EntityReference("50876", "Supplier"),
+                new EntityReference("05301", "Supplier Facility")
+            };
+            user.AccessibleEntities = _allEntities;
+
+
+            var ex = Assert.Throws<HttpRequestException>(() => { _api.PutUser(user); });
+
+            Assert.That(ex.Message, Is.StringContaining("One of the entity provided is not a child of another provided entity").IgnoreCase);
+
+
+
+        }
+
+        [Test]
+        [Explicit(
+            "This test expects one organzation and one location that is the child of the organization")]
+        public void PutUser_OneCorporateAndOneLocationForAssicatedEntities_AssociatedEntitiesInResponse()
+        {
+            var user = _api.GetUser(TestUserName5);
+
+            user.AssociatedEntities = new List<EntityReference>()
+            {
+                new EntityReference("16600", "Supplier"),
+                new EntityReference("05301", "Supplier Facility")
+            };
+            user.AccessibleEntities = _allEntities;
+
+
+            var result = _api.PutUser(user);
+
+            Assert.That(result.AssociatedEntities, Is.Not.Null.And.Not.Empty);
+            Assert.That(result.AssociatedEntities[0].Id, Is.EqualTo(user.AssociatedEntities[0].Id));
+            Assert.That(result.AssociatedEntities[1].Id, Is.EqualTo(user.AssociatedEntities[1].Id));
+
+
 
         }
 
@@ -1080,11 +1157,11 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutUser(user);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
         }
 
-        [TestCase("Auditor", "Supplier", Description = "This is a test w/ an Internal and an External User Profile Id")]        
-        [TestCase("Supplier", "Lab Tester", Description = "This is a test w/ two External User Profile Ids")]
+        [TestCase(InternalProfileId, ExternalProfileId, Description = "This is a test w/ an Internal and an External User Profile Id")]        
+        [TestCase(ExternalProfileId, ExternalProfileId2, Description = "This is a test w/ two External User Profile Ids")]
         public void PutUser_WhenExternalProfiles_HasAllAccessIsTrue_ThrowsException(string profileId1, string profileId2)
         {
 

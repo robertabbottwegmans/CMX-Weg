@@ -189,7 +189,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetRetailLocation("This Id doesn't exist");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
         }
 
         [Test]
@@ -472,7 +472,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutRetailLocation(location); 
             });
 
-            Assert.That(ex.Message, Is.StringContaining("does not exist"));
+            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
         }
 
         [Test]

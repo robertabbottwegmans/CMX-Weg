@@ -201,6 +201,18 @@ namespace BusinessIntegrationClient.Tester
             SerializeToJsonThenToXml(user);
         }
 
+
+        [Test]
+        public void User_WithEmptyExtraInformation_DeserializesFromJsonOk()
+        {
+            var json = @"{ ""UserName"": ""test"", ""ExtraInformation"": """", ""Hierarchies"": """" }";
+
+            var result = json.FromJson<User>();
+
+            Assert.IsNull(result.ExtraInformation);
+            Assert.IsNull(result.Hierarchies);
+        }
+
         [Test]
         public void UserSummary_ToJson_ThenToXml_ThenToJson_BackToUserSummary()
         {

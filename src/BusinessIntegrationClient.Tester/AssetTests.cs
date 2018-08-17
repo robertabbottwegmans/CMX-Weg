@@ -160,7 +160,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PostAsset(asset);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("Not Authorized").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("Invalid Request").IgnoreCase);
         }
 
         [Test]
@@ -208,10 +208,10 @@ namespace BusinessIntegrationClient.Tester
 
             var ex  = Assert.Throws<HttpRequestException>(() =>
             {
-                _api.PutJson<Asset>("Asset/FakeAssetId", asset);
+                _api.PutJson<Asset>("Assets/FakeAssetId", asset);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("Not Authorized").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("Invalid Request").IgnoreCase);
         }
 
 
@@ -231,7 +231,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutAsset(asset);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
         }
 
         [Test]

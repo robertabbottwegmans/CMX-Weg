@@ -25,7 +25,7 @@ rqlcmd DelStores -s cmx-master-dev.compliancemetrix.com.local -f  unit_test_reta
 del  unit_test_retail_locations.txt
 
 rem delete test Assets
-rqlcmd QueryStores cmx-master-dev.compliancemetrix.com.local Core_Asset_Tracking.List "ID LIKE 'TestAsset_1%'" "" unit_test_assets.txt
+rqlcmd QueryStores cmx-master-dev.compliancemetrix.com.local Core_Asset_Tracking.List "ID LIKE 'TestAsset_%%'" "" unit_test_assets.txt
 rqlcmd DelStores -s cmx-master-dev.compliancemetrix.com.local -f  unit_test_assets.txt
 del  unit_test_assets.txt
 
