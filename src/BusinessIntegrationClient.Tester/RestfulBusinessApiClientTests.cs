@@ -200,7 +200,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetJson<ContactType>("ContactType/" + contactTypeCode);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("Not Implemented").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("Method Not Allowed").IgnoreCase);
         }
 
         [Test]

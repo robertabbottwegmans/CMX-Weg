@@ -1323,7 +1323,7 @@ namespace BusinessIntegrationClient.Tester
 
 
         [Test]
-        public void Hierarchies_CanUserIndexer()
+        public void Hierarchies_CanUseIndexer()
         {
             var hierarchies = new Hierarchies(3);
 

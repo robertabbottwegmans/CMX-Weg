@@ -46,14 +46,14 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<UserSummary>>("User/" + query.ToQueryString()) ?? new List<UserSummary>();
+            return api.GetJson<List<UserSummary>>("Users/" + query.ToQueryString()) ?? new List<UserSummary>();
         }
 
         public static User GetUser(this RestfulBusinessApiClient api, string id)
         {
             if (id == null) throw new ArgumentNullException("id");
 
-            return api.GetJson<User>("User/" + id.UrlEncode());
+            return api.GetJson<User>("Users/" + id.UrlEncode());
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace BusinessIntegrationClient
         {
             user.VerifyKeysAreValidXmlNames();
 
-            return api.PutJson<User>("User/" + user.UserName.UrlEncode(), user);
+            return api.PutJson<User>("Users/" + user.UserName.UrlEncode(), user);
         }
 
         /// <summary>
@@ -80,13 +80,13 @@ namespace BusinessIntegrationClient
         {
             user.VerifyKeysAreValidXmlNames();
 
-            return api.PostJson<User>("User", user);
+            return api.PostJson<User>("Users", user);
         }
 
         public static void DeleteUser(this RestfulBusinessApiClient api, string id)
         {
             if (id == null) throw new ArgumentNullException("id");
-            api.Delete("User/" + id.UrlEncode());
+            api.Delete("Users/" + id.UrlEncode());
         }
 
         public static List<Asset> ListAssets(this RestfulBusinessApiClient api, int pageIndex = 0, int pageSize = -1)
@@ -97,29 +97,29 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<Asset>>("Asset/" + query.ToQueryString()) ?? new List<Asset>();
+            return api.GetJson<List<Asset>>("Assets/" + query.ToQueryString()) ?? new List<Asset>();
         }
 
         public static Asset GetAsset(this RestfulBusinessApiClient api, string id)
         {
             if (id == null) throw new ArgumentNullException("id");
 
-            return api.GetJson<Asset>("Asset/" + id.UrlEncode());
+            return api.GetJson<Asset>("Assets/" + id.UrlEncode());
         }
 
         public static Asset PutAsset(this RestfulBusinessApiClient api, Asset asset)
         {
-            return api.PutJson<Asset>("Asset/" + asset.Id.UrlEncode(), asset);
+            return api.PutJson<Asset>("Assets/" + asset.Id.UrlEncode(), asset);
         }
 
         public static Asset PostAsset(this RestfulBusinessApiClient api, Asset asset)
         {
-            return api.PostJson<Asset>("Asset", asset);
+            return api.PostJson<Asset>("Assets", asset);
         }
 
         public static void DeleteAsset(this RestfulBusinessApiClient api, string id)
         {
-            api.Delete("Asset/" + id.UrlEncode());
+            api.Delete("Assets/" + id.UrlEncode());
         }
 
         public static List<CountryInfo> ListCountries(this RestfulBusinessApiClient api, int pageIndex = 0,
@@ -132,7 +132,7 @@ namespace BusinessIntegrationClient
             };
 
 
-            return api.GetJson<List<CountryInfo>>("Country/" + query.ToQueryString()) ?? new List<CountryInfo>();
+            return api.GetJson<List<CountryInfo>>("Countries/" + query.ToQueryString()) ?? new List<CountryInfo>();
         }
 
         public static List<ProfileInfo> ListProfiles(this RestfulBusinessApiClient api, int pageIndex = 0,
@@ -144,7 +144,7 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<ProfileInfo>>("Profile/" + query.ToQueryString()) ?? new List<ProfileInfo>();
+            return api.GetJson<List<ProfileInfo>>("Profiles/" + query.ToQueryString()) ?? new List<ProfileInfo>();
         }
 
         public static List<EntityTypeInfo> ListEntityTypes(this RestfulBusinessApiClient api, int pageIndex = 0,
@@ -156,7 +156,7 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<EntityTypeInfo>>("EntityType/" + query.ToQueryString()) ??
+            return api.GetJson<List<EntityTypeInfo>>("EntityTypes/" + query.ToQueryString()) ??
                    new List<EntityTypeInfo>();
         }
 
@@ -169,7 +169,7 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<StateInfo>>("State/" + query.ToQueryString()) ?? new List<StateInfo>();
+            return api.GetJson<List<StateInfo>>("States/" + query.ToQueryString()) ?? new List<StateInfo>();
         }
 
         public static List<StateInfo> ListStatesByCountry(this RestfulBusinessApiClient api, string countryCode,
@@ -192,7 +192,7 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<ConceptInfo>>("Concept/" + query.ToQueryString()) ?? new List<ConceptInfo>();
+            return api.GetJson<List<ConceptInfo>>("Concepts/" + query.ToQueryString()) ?? new List<ConceptInfo>();
         }
 
         public static List<ContactType> ListContactTypes(this RestfulBusinessApiClient api, int pageIndex = 0,
@@ -204,7 +204,7 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<ContactType>>("ContactType/" + query.ToQueryString()) ?? new List<ContactType>();
+            return api.GetJson<List<ContactType>>("ContactTypes/" + query.ToQueryString()) ?? new List<ContactType>();
         }
 
         public static List<RetailLocationSummary> ListRetailLocations(this RestfulBusinessApiClient api,
@@ -217,28 +217,28 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<RetailLocationSummary>>("RetailLocation/" + query.ToQueryString()) ??
+            return api.GetJson<List<RetailLocationSummary>>("RetailLocations/" + query.ToQueryString()) ??
                    new List<RetailLocationSummary>();
         }
 
         public static RetailLocation GetRetailLocation(this RestfulBusinessApiClient api, string id)
         {
-            return api.GetJson<RetailLocation>("RetailLocation/" + id.UrlEncode());
+            return api.GetJson<RetailLocation>("RetailLocations/" + id.UrlEncode());
         }
 
         public static RetailLocation PutRetailLocation(this RestfulBusinessApiClient api, RetailLocation retailRetailLocation)
         {
-            return api.PutJson<RetailLocation>("RetailLocation/" + retailRetailLocation.Id.UrlEncode(), retailRetailLocation);
+            return api.PutJson<RetailLocation>("RetailLocations/" + retailRetailLocation.Id.UrlEncode(), retailRetailLocation);
         }
 
         public static RetailLocation PostRetailLocation(this RestfulBusinessApiClient api, RetailLocation retailRetailLocation)
         {
-            return api.PostJson<RetailLocation>("RetailLocation", retailRetailLocation);
+            return api.PostJson<RetailLocation>("RetailLocations", retailRetailLocation);
         }
 
         public static void DeleteRetailLocation(this RestfulBusinessApiClient api, string id)
         {
-            api.Delete("RetailLocation/" + id.UrlEncode());
+            api.Delete("RetailLocations/" + id.UrlEncode());
         }
 
         public static List<RestaurantSummary> ListRestaurants(this RestfulBusinessApiClient api, int pageIndex = 0,
@@ -250,27 +250,27 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<RestaurantSummary>>("Restaurant/" + query.ToQueryString()) ?? new List<RestaurantSummary>();
+            return api.GetJson<List<RestaurantSummary>>("Restaurants/" + query.ToQueryString()) ?? new List<RestaurantSummary>();
         }
 
         public static Restaurant GetRestaurant(this RestfulBusinessApiClient api, string id)
         {
-            return api.GetJson<Restaurant>("Restaurant/" + id.UrlEncode());
+            return api.GetJson<Restaurant>("Restaurants/" + id.UrlEncode());
         }
 
         public static Restaurant PutRestaurant(this RestfulBusinessApiClient api, Restaurant restaurant)
         {
-            return api.PutJson<Restaurant>("Restaurant/" + restaurant.Id.UrlEncode(), restaurant);
+            return api.PutJson<Restaurant>("Restaurants/" + restaurant.Id.UrlEncode(), restaurant);
         }
 
         public static Restaurant PostRestaurant(this RestfulBusinessApiClient api, Restaurant restaurant)
         {
-            return api.PostJson<Restaurant>("Restaurant", restaurant);
+            return api.PostJson<Restaurant>("Restaurants", restaurant);
         }
 
         public static void DeleteRestaurant(this RestfulBusinessApiClient api, string id)
         {
-            api.Delete("Restaurant/" + id.UrlEncode());
+            api.Delete("Restaurants/" + id.UrlEncode());
         }
 
     }
