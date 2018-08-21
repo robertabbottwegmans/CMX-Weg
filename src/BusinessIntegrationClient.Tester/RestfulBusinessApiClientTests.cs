@@ -197,10 +197,10 @@ namespace BusinessIntegrationClient.Tester
         {
             var ex = Assert.Throws<HttpRequestException>(() =>
             {
-                _api.GetJson<ContactType>("ContactType/" + contactTypeCode);
+                _api.GetJson<ContactType>("ContactTypes/" + contactTypeCode);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("Method Not Allowed").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("Not Implemented").IgnoreCase);
         }
 
         [Test]
