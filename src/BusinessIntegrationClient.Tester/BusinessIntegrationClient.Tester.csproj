@@ -66,6 +66,7 @@
     <Compile Include="TestFixtures\BizApiTestFixtureBase.cs" />
     <Compile Include="SetupFixture.cs" />
     <Compile Include="UserTests.cs" />
+    <Compile Include="WegmansUseCaseTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
