@@ -132,7 +132,7 @@ namespace BusinessIntegrationClient.Tester
             {
                 UserName = userName,
                 Email = $"{userName}@wegmans.com",
-                FirstName = "Unit Test",
+                FirstName = UnitTestFirstName,
                 LastName = "User Name",
                 PrimaryPhoneNumber = "800-555-1212",
                 MobilePhoneNumber = "800-555-1212",
@@ -188,7 +188,7 @@ namespace BusinessIntegrationClient.Tester
             {
                 UserName = userName,
                 Email = $"{userName}@wegmans.com",
-                FirstName = "Unit Test",
+                FirstName = UnitTestFirstName,
                 LastName = "User Name",
                 PrimaryPhoneNumber = "800-555-1212",
                 MobilePhoneNumber = "800-555-1212",
@@ -240,7 +240,7 @@ namespace BusinessIntegrationClient.Tester
             {
                 UserName = userName,
                 Email = $"{userName}@wegmans.com",
-                FirstName = "Unit Test",
+                FirstName = UnitTestFirstName,
                 LastName = "User Name",
                 Profiles = new List<string> { profileId },
                 //set/leave contact related fields null:
@@ -299,7 +299,7 @@ namespace BusinessIntegrationClient.Tester
             {
                 UserName = userName,
                 Email = $"{userName}@wegmans.com",
-                FirstName = "Unit Test",
+                FirstName = UnitTestFirstName,
                 LastName = "User Name",
                 Profiles = new List<string> { profileId },
                 //set/leave contact related fields null:
