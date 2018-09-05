@@ -269,6 +269,15 @@ namespace BusinessIntegrationClient.Tester
         }
 
         [Test]
+        public void ListAllUsers_WithFilter_GetsAllMatchingFilter()
+        {
+            var result = _api.ListAllUsers(user => user.UserName == TestUserName1 ||
+                                                   user.UserName == TestUserName3);
+
+            Assert.That(result.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void ListUsers_NoPaging_GetsAllUsers()
         {
             var users = _api.ListUsers();
@@ -327,7 +336,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetUser("no such user name. 21-908i3-0941iir.109 i.0r..i");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [TestCase("CTM_625_retest_1")]
@@ -1157,7 +1166,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutUser(user);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [TestCase(InternalProfileId, ExternalProfileId, Description = "This is a test w/ an Internal and an External User Profile Id")]        

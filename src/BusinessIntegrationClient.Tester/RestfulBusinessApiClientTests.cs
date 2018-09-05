@@ -22,13 +22,24 @@ namespace BusinessIntegrationClient.Tester
         }
 
         [Test]
-        public void ListCountries_ListsCountries()
+        public void ListAllCountries_NoFilter_ReturnsMoreThan200()
+        {
+            //200 is the page limit.
+            //we have almost 250 Country ISO Codes in the DB.
+
+            var result = _api.ListAllCountries();
+
+            Assert.That(result.Count, Is.GreaterThan(200));
+        }
+
+        [Test]
+        public void ListCountries_NoPaging_Lists200Countries()
         {
             var result = _api.ListCountries();
 
             Assert.IsNotNull(result);
             //table may be empty...
-            Assert.That(result.Count, Is.GreaterThanOrEqualTo(0));
+            Assert.That(result.Count, Is.GreaterThanOrEqualTo(BusinessApiExtensions.DefaultPageSize));
             
             foreach (var country in result)
             {

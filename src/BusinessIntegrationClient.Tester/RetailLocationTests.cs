@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using BusinessIntegrationClient.Dtos;
@@ -11,7 +10,7 @@ namespace BusinessIntegrationClient.Tester
     [TestFixture]
     public class RetailLocationTests : BizApiTestFixtureBase
     {
-        private const int NumberOfTestRetailLocations = 3;
+        internal const int NumberOfTestRetailLocations = 3;
 
         /// <summary>
         /// Use this prefix so scripts can more easily delete related records.
@@ -20,16 +19,6 @@ namespace BusinessIntegrationClient.Tester
         private const string TestLocationId = "TestRetailLocation_1";
         private const string TestLocationId2 = "TestRetailLocation_2";
 
-
-        /// <summary>
-        ///     The Id of a Concept record - CREATE IT MANUALLY
-        /// </summary>
-        /// <remarks>
-        ///     See Core App Master Queues->Concepts & create one w/ this Id.
-        ///
-        ///     Tests that rely on it should be marked Explicit.
-        /// </remarks>
-        private const string UnitTestConceptId = "UnitTestConceptId";
 
         private void CreateTestRetailLocations()
         {
@@ -67,6 +56,7 @@ namespace BusinessIntegrationClient.Tester
                     },
                     ExtraInformation = new Dictionary<string, string>
                     {
+                        {"Division", "Division 1"},
                         {"ExtraStuff", $"Extra Stuff Value {i}"},
                         {extraInfoKey2, extraInfoValue2}
                     }
@@ -134,6 +124,15 @@ namespace BusinessIntegrationClient.Tester
         #endregion
 
         [Test]
+        public void ListAllRetailLocations_WithFilter_GetsAllMatchingFilter()
+        {
+            var result = _api.ListAllRetailLocations(r => r.Id == TestLocationId ||
+                                                          r.Id == TestLocationId2);
+
+            Assert.That(result.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void ListRetailLocations_NoPaging_ListsAll()
         {
             var result = _api.ListRetailLocations();
@@ -189,7 +188,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetRetailLocation("This Id doesn't exist");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [Test]
@@ -472,7 +471,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutRetailLocation(location); 
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [Test]

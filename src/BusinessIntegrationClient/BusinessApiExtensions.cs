@@ -7,8 +7,58 @@ using BusinessIntegrationClient.Dtos;
 
 namespace BusinessIntegrationClient
 {
-    public static partial class BusinessApiExtensions
+    public static class BusinessApiExtensions
     {
+        /// <summary>
+        ///     The Default Page Size for all ListAllXXXX methods.  If you specify a larger page size, it will still return 200.
+        /// </summary>
+        internal const int DefaultPageSize = 200;
+
+        /// <summary>
+        ///     A Predicate that always returns true
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static bool DefaultFilter<T>(T value)
+        {
+            return true;
+        }
+
+        /// <summary>
+        ///     List all items using paging.
+        /// </summary>
+        /// <typeparam name="T">the type of each item listed.</typeparam>
+        /// <param name="pageSize">the max size of each page</param>
+        /// <param name="readPage">A delegate that returns a single page of type T</param>
+        /// <param name="filter">A Predicate that filters items</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     Internally, the API will limit the # of results to 200 per page.
+        ///     Use this to list all items using paging, and using an optional lambda that filters results.
+        /// </remarks>
+        private static List<T> ListAll<T>(int pageSize, Func<int, IList<T>> readPage, Predicate<T> filter)
+        {
+            if (readPage == null) throw new ArgumentNullException(nameof(readPage));
+            if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
+            if (filter == null) throw new ArgumentNullException(nameof(filter));
+
+            var pageIndex = 0;
+            int pageRead;
+
+            var items = new List<T>();
+            do
+            {
+                var page = readPage(pageIndex++);
+
+                pageRead = page.Count;
+
+                items.AddRange(page.Where(item => filter(item)));
+            } while (pageRead == pageSize);
+
+            return items;
+        }
+
         /// <summary>
         ///     Creates a query string from a <see cref="NameValueCollection" />.
         /// </summary>
@@ -37,6 +87,32 @@ namespace BusinessIntegrationClient
             return sb.ToString();
         }
 
+        /// <summary>
+        ///     Lists All Users that match the client side filter. This pages through all records to ensure all records are
+        ///     returned.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="filter">A lambda that can filter results on the client side.</param>
+        /// <returns></returns>
+        public static List<UserSummary> ListAllUsers(this RestfulBusinessApiClient api,
+            Predicate<UserSummary> filter = null)
+        {
+            var pageSize = DefaultPageSize;
+
+            return ListAll(pageSize, pageIndex => api.ListUsers(pageIndex, pageSize),
+                filter ?? DefaultFilter);
+        }
+
+        /// <summary>
+        ///     Lists Users using pageIndex & pageSize. pageSize is limited to 200 results.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="pageIndex">current page index</param>
+        /// <param name="pageSize">requested page size, under 200.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     The server will limit pages to 200 records, using paging to get all records.
+        /// </remarks>
         public static List<UserSummary> ListUsers(this RestfulBusinessApiClient api, int pageIndex = 0,
             int pageSize = -1)
         {
@@ -51,7 +127,7 @@ namespace BusinessIntegrationClient
 
         public static User GetUser(this RestfulBusinessApiClient api, string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
 
             return api.GetJson<User>("Users/" + id.UrlEncode());
         }
@@ -85,10 +161,34 @@ namespace BusinessIntegrationClient
 
         public static void DeleteUser(this RestfulBusinessApiClient api, string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
             api.Delete("Users/" + id.UrlEncode());
         }
 
+        /// <summary>
+        ///     Lists All Assets that match the client side filter. This pages through all records to ensure all records are
+        ///     returned.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="filter">A lambda that can filter results on the client side.</param>
+        /// <returns></returns>
+        public static List<Asset> ListAllAssets(this RestfulBusinessApiClient api, Predicate<Asset> filter = null)
+        {
+            var pageSize = DefaultPageSize;
+            return ListAll(pageSize, pageIndex => api.ListAssets(pageIndex, pageSize), filter ?? DefaultFilter);
+        }
+
+        /// <summary>
+        ///     Lists Assets using pageIndex & pageSize. pageSize is limited to 200 results.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="pageIndex">current page index</param>
+        /// <param name="pageSize">requested page size, under 200.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     The server will limit pages to 200 records, using paging to get all records.
+        ///     <see cref="ListAllAssets" />
+        /// </remarks>
         public static List<Asset> ListAssets(this RestfulBusinessApiClient api, int pageIndex = 0, int pageSize = -1)
         {
             var query = new NameValueCollection
@@ -102,7 +202,7 @@ namespace BusinessIntegrationClient
 
         public static Asset GetAsset(this RestfulBusinessApiClient api, string id)
         {
-            if (id == null) throw new ArgumentNullException("id");
+            if (id == null) throw new ArgumentNullException(nameof(id));
 
             return api.GetJson<Asset>("Assets/" + id.UrlEncode());
         }
@@ -122,6 +222,28 @@ namespace BusinessIntegrationClient
             api.Delete("Assets/" + id.UrlEncode());
         }
 
+        /// <summary>
+        /// Lists all Countries from the lookup table, using paging to ensure all records are returned.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static List<CountryInfo> ListAllCountries(this RestfulBusinessApiClient api, Predicate<CountryInfo> filter = null)
+        {
+            var pageSize = DefaultPageSize;
+            return ListAll(pageSize, pageIndex => api.ListCountries(pageIndex, pageSize), filter ?? DefaultFilter);
+        }
+
+        /// <summary>
+        ///     Lists Countries using pageIndex & pageSize. pageSize is limited to 200 results.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="pageIndex">current page index</param>
+        /// <param name="pageSize">requested page size, under 200.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     The server will limit pages to 200 records, using paging to get all records.
+        /// </remarks>
         public static List<CountryInfo> ListCountries(this RestfulBusinessApiClient api, int pageIndex = 0,
             int pageSize = -1)
         {
@@ -207,6 +329,34 @@ namespace BusinessIntegrationClient
             return api.GetJson<List<ContactType>>("ContactTypes/" + query.ToQueryString()) ?? new List<ContactType>();
         }
 
+        /// <summary>
+        ///     Lists All Retail Locations that match the client side filter. This pages through all records to ensure all records
+        ///     are returned.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="filter">A lambda that can filter results on the client side.</param>
+        /// <returns></returns>
+        public static List<RetailLocationSummary> ListAllRetailLocations(
+            this RestfulBusinessApiClient api,
+            Predicate<RetailLocationSummary> filter = null)
+        {
+            var pageSize = DefaultPageSize;
+            return ListAll(pageSize, pageIndex => api.ListRetailLocations(pageIndex, pageSize),
+                filter);
+        }
+
+
+        /// <summary>
+        ///     Lists Retail Locations using pageIndex & pageSize. pageSize is limited to 200 results.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="pageIndex">current page index</param>
+        /// <param name="pageSize">requested page size, under 200.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     The server will limit pages to 200 records, using paging to get all records.
+        ///     <see cref="ListAllRetailLocations" />
+        /// </remarks>
         public static List<RetailLocationSummary> ListRetailLocations(this RestfulBusinessApiClient api,
             int pageIndex = 0,
             int pageSize = -1)
@@ -226,12 +376,15 @@ namespace BusinessIntegrationClient
             return api.GetJson<RetailLocation>("RetailLocations/" + id.UrlEncode());
         }
 
-        public static RetailLocation PutRetailLocation(this RestfulBusinessApiClient api, RetailLocation retailRetailLocation)
+        public static RetailLocation PutRetailLocation(this RestfulBusinessApiClient api,
+            RetailLocation retailRetailLocation)
         {
-            return api.PutJson<RetailLocation>("RetailLocations/" + retailRetailLocation.Id.UrlEncode(), retailRetailLocation);
+            return api.PutJson<RetailLocation>("RetailLocations/" + retailRetailLocation.Id.UrlEncode(),
+                retailRetailLocation);
         }
 
-        public static RetailLocation PostRetailLocation(this RestfulBusinessApiClient api, RetailLocation retailRetailLocation)
+        public static RetailLocation PostRetailLocation(this RestfulBusinessApiClient api,
+            RetailLocation retailRetailLocation)
         {
             return api.PostJson<RetailLocation>("RetailLocations", retailRetailLocation);
         }
@@ -241,6 +394,31 @@ namespace BusinessIntegrationClient
             api.Delete("RetailLocations/" + id.UrlEncode());
         }
 
+        /// <summary>
+        ///     Lists All Restuarants that match that match the client side filter. This pages through all records to ensure all
+        ///     records are returned.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static List<RestaurantSummary> ListAllRestaurants(this RestfulBusinessApiClient api,
+            Predicate<RestaurantSummary> filter = null)
+        {
+            var pageSize = DefaultPageSize;
+            return ListAll(pageSize, pageIndex => api.ListRestaurants(pageIndex, pageSize), filter ?? DefaultFilter);
+        }
+
+        /// <summary>
+        ///     Lists Restaurants using pageIndex & pageSize. pageSize is limited to 200 results.
+        /// </summary>
+        /// <param name="api"></param>
+        /// <param name="pageIndex">current page index</param>
+        /// <param name="pageSize">requested page size, under 200.</param>
+        /// <returns></returns>
+        /// <remarks>
+        ///     The server will limit pages to 200 records, using paging to get all records.
+        ///     <see cref="ListAllRestaurants" />
+        /// </remarks>
         public static List<RestaurantSummary> ListRestaurants(this RestfulBusinessApiClient api, int pageIndex = 0,
             int pageSize = -1)
         {
@@ -250,7 +428,8 @@ namespace BusinessIntegrationClient
                 {"pageSize", pageSize.ToString()}
             };
 
-            return api.GetJson<List<RestaurantSummary>>("Restaurants/" + query.ToQueryString()) ?? new List<RestaurantSummary>();
+            return api.GetJson<List<RestaurantSummary>>("Restaurants/" + query.ToQueryString()) ??
+                   new List<RestaurantSummary>();
         }
 
         public static Restaurant GetRestaurant(this RestfulBusinessApiClient api, string id)
@@ -272,7 +451,5 @@ namespace BusinessIntegrationClient
         {
             api.Delete("Restaurants/" + id.UrlEncode());
         }
-
     }
-
 }

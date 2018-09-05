@@ -325,5 +325,14 @@ namespace BusinessIntegrationClient.Tester
         }
 
 
+        [TestCase("Division 1", RetailLocationTests.NumberOfTestRetailLocations, 
+            Description = "Gets Records created by RetailLocationTests.CreateTestRetailLocations() based on the Division ExtraInformation value")]
+        public void ListAllRetailLocations_ByDivision_CanGetByDivision(string division, int expectedNumber)
+        {
+            var result = _api.ListAllRetailLocations(rl => rl.ExtraInformation["Division"] == division);
+
+            Assert.That(result.Count, Is.GreaterThanOrEqualTo(expectedNumber));
+    
+        }
     }
 }

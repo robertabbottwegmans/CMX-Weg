@@ -62,6 +62,7 @@
     <Compile Include="Dtos\RetailLocation.cs" />
     <Compile Include="Dtos\RestaurantSummary.cs" />
     <Compile Include="Dtos\ProfileInfo.cs" />
+    <Compile Include="Dtos\RetailLocationSummary.cs" />
     <Compile Include="Dtos\StateInfo.cs" />
     <Compile Include="Dtos\User.cs" />
     <Compile Include="Dtos\UserSummary.cs" />

@@ -127,6 +127,15 @@ namespace BusinessIntegrationClient.Tester
         #endregion
 
         [Test]
+        public void ListAllRestaurants_WithFilter_GetsAllMatchingFilter()
+        {
+            var result = _api.ListAllRestaurants(r => r.Id == TestRestaurantId ||
+                                                      r.Id == TestRestaurantId2);
+
+            Assert.That(result.Count, Is.EqualTo(2));
+        }
+
+        [Test]
         public void ListRestaurants_NoPaging_ListsAll()
         {
             var result = _api.ListRestaurants();
@@ -184,7 +193,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetRestaurant("This Id doesn't exist");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [Test]
@@ -302,7 +311,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutRestaurant(location);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
 

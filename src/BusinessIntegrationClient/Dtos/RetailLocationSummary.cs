@@ -3,12 +3,12 @@
 namespace BusinessIntegrationClient.Dtos
 {
     /// <summary>
-    /// Represents one row of Restaurant data from a queue.
+    /// Represents one row of Retail Location data from a queue.
     /// </summary>
     /// <remarks>
     /// When listing all records, data is typically 'flattened', as data is read from a table w/ columns
     /// </remarks>
-    public class RestaurantSummary
+    public class RetailLocationSummary
     {
         public string Id { get; set; }
         public string LocationName { get; set; }
@@ -28,6 +28,6 @@ namespace BusinessIntegrationClient.Dtos
         public string MailingZipCode { get; set; }
         public string MailingCountry { get; set; }
 
-        public Dictionary<string, string> ExtraInformation { get; set; }
+        public Dictionary<string,string> ExtraInformation { get; set; }
     }
 }

@@ -86,6 +86,14 @@ namespace BusinessIntegrationClient.Tester
         #endregion
 
         [Test]
+        public void ListAllAssets_WithFilter_GetsAllMatchingFilter()
+        {
+            var assets = _api.ListAllAssets(a => a.Id == TestAssetId);
+
+            Assert.That(assets.Count, Is.EqualTo(1));
+        }
+
+        [Test]
         public void ListAssets_NoPaging_GetsAllAssets()
         {
             var assets = _api.ListAssets();
@@ -231,7 +239,7 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutAsset(asset);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not found").IgnoreCase);
+            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
         }
 
         [Test]
