@@ -29,17 +29,18 @@ namespace BusinessIntegrationClient.Tester
 
             var result = _api.ListAllCountries();
 
-            Assert.That(result.Count, Is.GreaterThan(200));
+            Assert.That(result.Count, Is.GreaterThan(200).And.LessThan(300));
         }
 
         [Test]
-        public void ListCountries_NoPaging_Lists200Countries()
+        public void ListCountries_NoPaging_Returns200()
         {
             var result = _api.ListCountries();
 
+            
             Assert.IsNotNull(result);
-            //table may be empty...
-            Assert.That(result.Count, Is.GreaterThanOrEqualTo(BusinessApiExtensions.DefaultPageSize));
+            
+            Assert.That(result.Count, Is.EqualTo(BusinessApiExtensions.DefaultPageSize));
             
             foreach (var country in result)
             {

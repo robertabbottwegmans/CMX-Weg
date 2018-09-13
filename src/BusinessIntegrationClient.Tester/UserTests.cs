@@ -45,7 +45,7 @@ namespace BusinessIntegrationClient.Tester
         /// <remarks>
         ///     Different Data Firewall rules can exist for internal/external user profile types.
         /// </remarks>
-        private const string InternalProfileId = "Procurement";//"Auditor";
+        private const string InternalProfileId = "Auditor";
 
         /// <summary>
         ///     A Profile Id for an Internal user profile type. See Permissions Management->Profiles
@@ -61,7 +61,7 @@ namespace BusinessIntegrationClient.Tester
         /// <remarks>
         ///     Different Data Firewall rules can exist for internal/external user profile types.
         /// </remarks>
-        private const string ExternalProfileId = "Supplier";
+        private const string ExternalProfileId = "Location Manager";// "Supplier";
 
         /// <summary>
         ///     A Profile Id for an External user profile type. See Permissions Management->Profiles

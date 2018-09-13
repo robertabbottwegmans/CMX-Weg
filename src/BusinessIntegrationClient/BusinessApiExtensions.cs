@@ -10,7 +10,9 @@ namespace BusinessIntegrationClient
     public static class BusinessApiExtensions
     {
         /// <summary>
-        ///     The Default Page Size for all ListAllXXXX methods.  If you specify a larger page size, it will still return 200.
+        ///     The Default Page Size.
+        ///     If you specify a larger page size, it will still return 200.
+        ///     If you don't specify a page size on the query string, the platform will use pageSize = 200 internally.
         /// </summary>
         internal const int DefaultPageSize = 200;
 
@@ -23,6 +25,18 @@ namespace BusinessIntegrationClient
         private static bool DefaultFilter<T>(T value)
         {
             return true;
+        }
+
+        private static NameValueCollection MakePagingQuery(int? pageIndex, int? pageSize)
+        {
+            var query = new NameValueCollection();
+
+            if (pageIndex.HasValue)
+                query.Add("pageIndex", pageIndex.ToString());
+            if (pageSize.HasValue)
+                query.Add("pageSize", pageSize.ToString());
+            
+            return query;
         }
 
         /// <summary>
@@ -113,14 +127,10 @@ namespace BusinessIntegrationClient
         /// <remarks>
         ///     The server will limit pages to 200 records, using paging to get all records.
         /// </remarks>
-        public static List<UserSummary> ListUsers(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<UserSummary> ListUsers(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<UserSummary>>("Users/" + query.ToQueryString()) ?? new List<UserSummary>();
         }
@@ -189,13 +199,10 @@ namespace BusinessIntegrationClient
         ///     The server will limit pages to 200 records, using paging to get all records.
         ///     <see cref="ListAllAssets" />
         /// </remarks>
-        public static List<Asset> ListAssets(this RestfulBusinessApiClient api, int pageIndex = 0, int pageSize = -1)
+        public static List<Asset> ListAssets(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<Asset>>("Assets/" + query.ToQueryString()) ?? new List<Asset>();
         }
@@ -244,58 +251,42 @@ namespace BusinessIntegrationClient
         /// <remarks>
         ///     The server will limit pages to 200 records, using paging to get all records.
         /// </remarks>
-        public static List<CountryInfo> ListCountries(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<CountryInfo> ListCountries(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
-
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<CountryInfo>>("Countries/" + query.ToQueryString()) ?? new List<CountryInfo>();
         }
 
-        public static List<ProfileInfo> ListProfiles(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<ProfileInfo> ListProfiles(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<ProfileInfo>>("Profiles/" + query.ToQueryString()) ?? new List<ProfileInfo>();
         }
 
-        public static List<EntityTypeInfo> ListEntityTypes(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<EntityTypeInfo> ListEntityTypes(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<EntityTypeInfo>>("EntityTypes/" + query.ToQueryString()) ??
                    new List<EntityTypeInfo>();
         }
 
-        public static List<StateInfo> ListStates(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<StateInfo> ListStates(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<StateInfo>>("States/" + query.ToQueryString()) ?? new List<StateInfo>();
         }
 
         public static List<StateInfo> ListStatesByCountry(this RestfulBusinessApiClient api, string countryCode,
-            int pageIndex = 0, int pageSize = -1)
+            int? pageIndex = null,
+            int? pageSize = null)
         {
             //url?
             //return api.GetJson<List<StateInfo>>("State/");
@@ -305,26 +296,18 @@ namespace BusinessIntegrationClient
         }
 
 
-        public static List<ConceptInfo> ListConcepts(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<ConceptInfo> ListConcepts(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<ConceptInfo>>("Concepts/" + query.ToQueryString()) ?? new List<ConceptInfo>();
         }
 
-        public static List<ContactType> ListContactTypes(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<ContactType> ListContactTypes(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<ContactType>>("ContactTypes/" + query.ToQueryString()) ?? new List<ContactType>();
         }
@@ -358,14 +341,10 @@ namespace BusinessIntegrationClient
         ///     <see cref="ListAllRetailLocations" />
         /// </remarks>
         public static List<RetailLocationSummary> ListRetailLocations(this RestfulBusinessApiClient api,
-            int pageIndex = 0,
-            int pageSize = -1)
+            int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<RetailLocationSummary>>("RetailLocations/" + query.ToQueryString()) ??
                    new List<RetailLocationSummary>();
@@ -419,14 +398,10 @@ namespace BusinessIntegrationClient
         ///     The server will limit pages to 200 records, using paging to get all records.
         ///     <see cref="ListAllRestaurants" />
         /// </remarks>
-        public static List<RestaurantSummary> ListRestaurants(this RestfulBusinessApiClient api, int pageIndex = 0,
-            int pageSize = -1)
+        public static List<RestaurantSummary> ListRestaurants(this RestfulBusinessApiClient api, int? pageIndex = null,
+            int? pageSize = null)
         {
-            var query = new NameValueCollection
-            {
-                {"pageIndex", pageIndex.ToString()},
-                {"pageSize", pageSize.ToString()}
-            };
+            var query = MakePagingQuery(pageIndex, pageSize);
 
             return api.GetJson<List<RestaurantSummary>>("Restaurants/" + query.ToQueryString()) ??
                    new List<RestaurantSummary>();

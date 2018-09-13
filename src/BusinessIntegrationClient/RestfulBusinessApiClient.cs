@@ -59,32 +59,41 @@ namespace BusinessIntegrationClient
         ///     Re-authenticates the api client connection if the authentication ticket is nearing expiration.
         /// </summary>
         /// <remarks>
-        ///     This method is provided to prevent long running processes from failing because the API client instance has expired.
+        ///     <para>
+        ///         This method is provided to prevent long running processes from failing because the API client instance has
+        ///         expired.
+        ///     </para>
+        ///     <para>
+        ///         The ticket issued by the authentication request is only
+        ///         valid for 1 hour.
+        ///     </para>
         /// </remarks>
         public void ReauthenticateIfNearingExpiration()
         {
-            var reauthenticate = (DateTime.Now - _authenticationTicketIssued).TotalMinutes >= 30;
-            if (reauthenticate)
+
+            Func<bool> shouldAuthenticate = () => (DateTime.Now - _authenticationTicketIssued).TotalMinutes >= 40;
+
+            if (shouldAuthenticate())
+            {
                 lock (this)
                 {
-                    reauthenticate = (DateTime.Now - _authenticationTicketIssued).TotalMinutes >= 30;
-
-                    if (reauthenticate)
-                        try
-                        {
-                            Authenticate();
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error("Unable to re-authenticate the API connection. Exception:", ex);
-                            throw;
-                        }
+                    if (!shouldAuthenticate()) return;
+                    try
+                    {
+                        Authenticate();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error("Unable to re-authenticate the API connection. Exception:", ex);
+                        throw;
+                    }
                 }
+            }
         }
 
         public void Authenticate()
         {
-            var authenticateUrl = CreateAuthenticationUrl(_apiConfig);
+            var authenticateUrl = _apiConfig.GetAuthenticationUrl();
 
             var content = CreateJsonStringContent(new
             {
@@ -104,35 +113,16 @@ namespace BusinessIntegrationClient
             //The server has logic internally to consider tickets expired.
             _authenticationTicketIssued = authorization.TicketExpires.FromRfc1123().ToLocalTime();
 
-
             _httpClient.DefaultRequestHeaders.Remove(AuthorizationHeaderName);
-            _httpClient.DefaultRequestHeaders.Remove(TimestampHeaderName);
-
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(AuthorizationHeaderName, authorization.Ticket);
-            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(TimestampHeaderName, authorization.TicketExpires);
         }
 
-        private static Uri CreateBaseAddressUri(RqlApiConfiguration apiConfig)
-        {
-            var uri = new UriBuilder(apiConfig.UseSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp,
-                apiConfig.Site, apiConfig.Port, "api/biz/");
-
-            return uri.Uri;
-        }
-
-        private static string CreateAuthenticationUrl(RqlApiConfiguration apiConfig)
-        {
-            var uri = new UriBuilder(apiConfig.UseSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp,
-                apiConfig.Site, apiConfig.Port, "api/Authenticate");
-
-            return uri.ToString();
-        }
 
         private HttpClient CreateHttpClient(RqlApiConfiguration apiConfig)
         {
             var httpClient = new HttpClient
             {
-                BaseAddress = CreateBaseAddressUri(apiConfig),
+                BaseAddress = apiConfig.GetBusinessApiBaseUri(),
                 Timeout = apiConfig.RequestTimeout
             };
             if (!string.IsNullOrEmpty(apiConfig.UserAgent))
@@ -167,7 +157,7 @@ namespace BusinessIntegrationClient
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Logger.DebugFormat("Response: {0} - {1}", response.StatusCode, response.ReasonPhrase);
+                    Logger.DebugFormat("Response: {0} - {1}", (int) response.StatusCode, response.ReasonPhrase);
                 }
                 response.EnsureSuccessStatusCode();
 
@@ -194,7 +184,13 @@ namespace BusinessIntegrationClient
         {
             return new HttpRequestMessage(method, url)
             {
-                Headers = {{"Accept", ContentType.Json}},
+                Headers =
+                {
+                    //the server needs to compare the timestamp on the client
+                    //against the timestamp associated w/ the Auhentication ticket.
+                    {TimestampHeaderName, DateTime.Now.ToUtcRfc1123()},
+                    {"Accept", ContentType.Json}
+                },
                 Content = content
             };
         }

@@ -58,6 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssetTests.cs" />
+    <Compile Include="BasicApiClient\BasicBusinessApiClient.cs" />
+    <Compile Include="BasicApiClient\BasicBusinessApiClientTests.cs" />
     <Compile Include="DtoSerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RestaurantTests.cs" />
