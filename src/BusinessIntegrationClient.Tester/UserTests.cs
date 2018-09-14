@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using BusinessIntegrationClient.Dtos;
 using BusinessIntegrationClient.Tester.TestFixtures;
@@ -82,7 +83,7 @@ namespace BusinessIntegrationClient.Tester
 
         private void CreateTestUserAccounts()
         {
-            var allUserNames = _api.ListUsers().Select(u => u.UserName).ToList();
+            var allUserNames = _api.ListAllUsers().Select(u => u.UserName).ToList();
 
             var users = Enumerable.Range(1, NumberOfTestUsers).Select(i =>
             {
@@ -280,7 +281,7 @@ namespace BusinessIntegrationClient.Tester
         [Test]
         public void ListUsers_NoPaging_GetsAllUsers()
         {
-            var users = _api.ListUsers();
+            var users = _api.ListUsers(pageSize: -1);
 
             Assert.That(users, Is.Not.Null.And.Not.Empty);
             Assert.That(users.Count, Is.GreaterThanOrEqualTo(NumberOfTestUsers));
@@ -336,7 +337,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetUser("no such user name. 21-908i3-0941iir.109 i.0r..i");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [TestCase("CTM_625_retest_1")]
@@ -1107,7 +1110,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutUser(user);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("does not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
 
         }
 
@@ -1132,7 +1137,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutUser(user);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("does not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [Test]
@@ -1166,7 +1173,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutUser(user);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [TestCase(InternalProfileId, ExternalProfileId, Description = "This is a test w/ an Internal and an External User Profile Id")]        

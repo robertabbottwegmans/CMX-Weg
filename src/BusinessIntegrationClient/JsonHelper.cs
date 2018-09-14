@@ -14,6 +14,7 @@ namespace BusinessIntegrationClient
         /// <returns>JSON</returns>
         public static string ToJson(this object obj)
         {
+            if (obj == null || string.Empty.Equals(obj)) return obj as string;
             var settings = new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore,                

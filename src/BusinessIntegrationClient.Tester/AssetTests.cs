@@ -19,7 +19,7 @@ namespace BusinessIntegrationClient.Tester
 
         private void CreateTestAssetRecords()
         {
-            var allAssetIds = _api.ListAssets()
+            var allAssetIds = _api.ListAllAssets()
                 .Select(a => a.Id)
                 .ToList();
 
@@ -239,7 +239,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutAsset(asset);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [Test]

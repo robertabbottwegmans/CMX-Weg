@@ -25,7 +25,7 @@ namespace BusinessIntegrationClient.Tester
 
         private void CreateTestRestaurants()
         {
-            var allRestaurantIds = _api.ListRestaurants()
+            var allRestaurantIds = _api.ListAllRestaurants()
                 .Select(a => a.Id)
                 .ToList();
 
@@ -193,7 +193,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetRestaurant("This Id doesn't exist");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [Test]
@@ -311,7 +313,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutRestaurant(location);
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
 

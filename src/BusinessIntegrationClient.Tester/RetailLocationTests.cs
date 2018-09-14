@@ -22,7 +22,7 @@ namespace BusinessIntegrationClient.Tester
 
         private void CreateTestRetailLocations()
         {
-            var allRetailLocationIds = _api.ListRetailLocations()
+            var allRetailLocationIds = _api.ListAllRetailLocations()
                 .Select(a => a.Id)
                 .ToList();
 
@@ -188,7 +188,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.GetRetailLocation("This Id doesn't exist");
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [Test]
@@ -471,7 +473,9 @@ namespace BusinessIntegrationClient.Tester
                 _api.PutRetailLocation(location); 
             });
 
-            Assert.That(ex.Message, Is.StringContaining("not exist").IgnoreCase);
+            Assert.That(ex.Message, Is
+                .StringContaining("not found").IgnoreCase.Or
+                .StringContaining("not exist").IgnoreCase);//IIS vs. self hosting result
         }
 
         [Test]

@@ -260,7 +260,8 @@ namespace BusinessIntegrationClient.Tester
                 Description = "Asset Description",                
                 ExtraInformation = new Dictionary<string, string>
                 {
-                    {"ExtraStuff", "ExtraValue"}
+                    {"ExtraStuff", "ExtraValue"},
+                    {"ExtraStuff2", "ExtraValue2"}
                 }
             };
 
@@ -352,6 +353,48 @@ namespace BusinessIntegrationClient.Tester
 
             Assert.That(users.Count, Is.EqualTo(1));
             Assert.That(users[0].UserName, Is.EqualTo("Agri_User"));
+        }
+
+        [Test]
+        public void Sample()
+        {
+            var xml = @"
+<Variable>
+	<Request httpVerb=""GET"" resourceName=""widgets"">
+		<!-- snipped -->		
+	</Request>
+	<Response>
+		<HttpStatus code=""200"">OK</HttpStatus>
+		<Body xmlns:json=""http://james.newtonking.com/projects/json"">
+			<Id>123</Id>
+			<Name>My name is Widget</Name>
+			<Type>Type A Widget</Type>
+			<StringArray json:Array=""true"">array item 1</StringArray>
+			<StringArray json:Array=""true"">array item 2</StringArray>
+			<ExtraInfo>
+				<Key1>value 1</Key1>
+				<Key2>value 1</Key2>
+			</ExtraInfo>	
+		</Body>
+	</Response>	
+</Variable>
+";
+
+            Console.WriteLine(ConvertXmlToJson(xml));
+
+
+            var json = @"
+{
+	""Id"": ""123"",
+	""Name"": ""Thing 1"",
+	""Type"": ""Type A Widget"",
+	""ExtraInfo"": {
+		""Key1"": ""Value1"",
+		""Key2"": ""Value2""
+	}
+}";
+            Console.WriteLine(ConvertJsonToXml(json, "widget"));
+
         }
 
     }

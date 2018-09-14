@@ -325,7 +325,7 @@ namespace BusinessIntegrationClient
         {
             var pageSize = DefaultPageSize;
             return ListAll(pageSize, pageIndex => api.ListRetailLocations(pageIndex, pageSize),
-                filter);
+                filter ?? DefaultFilter);
         }
 
 
