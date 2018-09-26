@@ -1,4 +1,6 @@
-﻿using log4net.Config;
+﻿using System;
+using System.IO;
+using log4net.Config;
 using NUnit.Framework;
 
 namespace BusinessIntegrationClient.Tester
@@ -12,11 +14,12 @@ namespace BusinessIntegrationClient.Tester
         [SetUp]
         public void Setup()
         {
-            BasicConfigurator.Configure(
-                new log4net.Appender.ConsoleAppender
-                {
-                    Layout = new log4net.Layout.SimpleLayout()
-                });
+            //BasicConfigurator.Configure(
+            //    new log4net.Appender.ConsoleAppender
+            //    {
+            //        Layout = new log4net.Layout.SimpleLayout()
+            //    });
+            XmlConfigurator.Configure(new FileInfo(AppDomain.CurrentDomain.SetupInformation.ConfigurationFile));
         }
 
         [TearDown]

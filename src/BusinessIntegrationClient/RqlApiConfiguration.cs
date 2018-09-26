@@ -14,6 +14,7 @@ namespace BusinessIntegrationClient
         {
             UseSsl = true;
             RequestTimeout = TimeSpan.FromSeconds(30);
+            ConnectionLeaseTimeout = TimeSpan.FromMinutes(5);
             Port = -1;
         }
 
@@ -28,7 +29,23 @@ namespace BusinessIntegrationClient
         public string UserName { get; set; }
         public string Password { get; set; }
 
+        /// <summary>
+        ///     Connection Lease Timeout value, Defaults to 5 minutes.
+        ///     <see cref="http://byterot.blogspot.com/2016/07/singleton-httpclient-dns.html" />
+        /// </summary>
+        /// <remarks>
+        ///     Instances of <see cref="System.Net.Http.HttpClient" /> will maintain a connection across requests, but if DNS
+        ///     changes, it won't notice it as long as the connection is active. By forcing a connection least timeout, it'll
+        ///     detect a DNS change.
+        ///     <see cref="System.Net.Http.HttpClient" />
+        ///     <see cref="http://byterot.blogspot.com/2016/07/singleton-httpclient-dns.html" />
+        ///     See http://byterot.blogspot.com/2016/07/singleton-httpclient-dns.html
+        /// </remarks>
+        public TimeSpan ConnectionLeaseTimeout { get; set; }
 
+        /// <summary>
+        ///     The timeout associated with HTTP requests. Defaults to 30 seconds.
+        /// </summary>
         public TimeSpan RequestTimeout { get; set; }
 
         /// <summary>
@@ -85,6 +102,7 @@ namespace BusinessIntegrationClient
             var password = ConfigurationManager.AppSettings["Password"];
             var useSsl = Convert.ToBoolean(ConfigurationManager.AppSettings["UseSsl"] ?? "True");
             var port = Convert.ToInt32(ConfigurationManager.AppSettings["Port"] ?? "-1");
+            var userAgent = ConfigurationManager.AppSettings["UserAgent"];
 
             return new RqlApiConfiguration
             {
@@ -93,7 +111,7 @@ namespace BusinessIntegrationClient
                 Password = password,
                 UseSsl = useSsl,
                 Port = port,
-                //UserAgent = put in app.config too?
+                UserAgent = userAgent
             };
         }
 

@@ -15,7 +15,7 @@ namespace BusinessIntegrationClient
         private const string AuthorizationHeaderName = "Authorization";
         private const string TimestampHeaderName = "Timestamp";
 
-        private static readonly ILog Logger = LogManager.GetLogger(typeof(RestfulBusinessApiClient).Name);
+        private static readonly ILog Logger = LogManager.GetLogger("BusinessAPI");
 
         private readonly RqlApiConfiguration _apiConfig;
         private readonly HttpClient _httpClient;
@@ -42,6 +42,8 @@ namespace BusinessIntegrationClient
             _httpClient = CreateHttpClient(apiConfig);
 
             EnableTls();
+
+            InitializeConnectionLeaseTimeout();
         }
 
         void IDisposable.Dispose()
@@ -54,6 +56,18 @@ namespace BusinessIntegrationClient
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 |
                                                     SecurityProtocolType.Tls12;
         }
+
+        private void InitializeConnectionLeaseTimeout()
+        {
+            var siteUri = _apiConfig.GetBusinessApiBaseUri().GetLeftPart(UriPartial.Authority);
+            var timeout = _apiConfig.ConnectionLeaseTimeout.TotalMilliseconds;
+            //See:
+            //http://byterot.blogspot.com/2016/07/singleton-httpclient-dns.html
+
+            var servicePoint = ServicePointManager.FindServicePoint(new Uri(siteUri));
+            servicePoint.ConnectionLeaseTimeout = (int) timeout;
+        }
+
 
         /// <summary>
         ///     Re-authenticates the api client connection if the authentication ticket is nearing expiration.
@@ -131,7 +145,6 @@ namespace BusinessIntegrationClient
             httpClient.DefaultRequestHeaders.Accept
                 .Add(new MediaTypeWithQualityHeaderValue(ContentType.Json)); //ACCEPT header
 
-
             return httpClient;
         }
 
@@ -153,23 +166,70 @@ namespace BusinessIntegrationClient
             {
                 Logger.DebugFormat("Sending {0} request: url: {1}, Body: {2}", method, url, requestBody);
 
-                var response = _httpClient.SendAsync(requestMessage).Result;
-
-                if (!response.IsSuccessStatusCode)
+                if (method == HttpMethod.Delete)
                 {
-                    Logger.DebugFormat("Response: {0} - {1}", (int) response.StatusCode, response.ReasonPhrase);
+                    //When a DELETE returns 204 No Content,
+                    //the next request was getting an exception:
+                    //  "The server committed a protocol violation. Section=ResponseStatusLine"
+                    //Setting the "KeepAlive = false" in DELETE requests fixes the problem.
+                    //For performance, we're keeping connections alive, except for delete requests, which are the only ones expected to return 204 No Content.
+                    //
+                    requestMessage.Headers.ConnectionClose = true;
                 }
-                response.EnsureSuccessStatusCode();
 
-                var responseJson = response.Content.ReadAsStringAsync().Result;
+                HttpResponseMessage response;
+                try
+                {
+                    response = _httpClient.SendAsync(requestMessage)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                    //using ConfigureAwait/...GetResult(), means I don't get AggregateExceptions as you do w/ .Result. nice.
+                }
+                catch (Exception ex)
+                {
+                    Logger.ErrorFormat("Unable to send {0} {1} request:\r\n{2}",
+                        method, url, ex);
+                    if (!string.IsNullOrEmpty(requestBody))
+                        Logger.InfoFormat("The request body was:\r\n{0}", requestBody);
+                    Logger.Error("The request was:\r\n" + requestMessage.ToString());
+                    throw;
+                }
 
-                Logger.DebugFormat("Response: {0}", responseJson);
+                using (response)
+                {
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Logger.DebugFormat("Response: {0} - {1}",
+                            (int) response.StatusCode, response.ReasonPhrase);
+                    }
+                    response.EnsureSuccessStatusCode();
 
-                var result = typeof(T) == typeof(string)
-                    ? responseJson as T
-                    : responseJson.FromJson<T>();
+                    string responseJson;
+                    try
+                    {
+                        responseJson = response.Content.ReadAsStringAsync()
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.ErrorFormat("Unable to read {0} {1} response:\r\n{2}",
+                            method, url, ex);
+                        if(!string.IsNullOrEmpty(requestBody))
+                            Logger.InfoFormat("The request body was: \r\n{0}", requestBody);
+                        Logger.Error("The response was:\r\n" + response.ToString());
+                        throw;
+                    }
+                    Logger.DebugFormat("Response: {0}", responseJson);
 
-                return result;
+                    var result = typeof(T) == typeof(string)
+                        ? responseJson as T
+                        : responseJson.FromJson<T>();
+
+                    return result;
+                }
             }
         }
 
@@ -187,7 +247,7 @@ namespace BusinessIntegrationClient
                 Headers =
                 {
                     //the server needs to compare the timestamp on the client
-                    //against the timestamp associated w/ the Auhentication ticket.
+                    //against the timestamp associated w/ the Authentication ticket.
                     {TimestampHeaderName, DateTime.Now.ToUtcRfc1123()},
                     {"Accept", ContentType.Json}
                 },
@@ -206,7 +266,7 @@ namespace BusinessIntegrationClient
         }
 
         /// <summary>
-        ///     Issues a GET request to the specified URL, returing an instance of <see cref="TResponse" /> that has been
+        ///     Issues a GET request to the specified URL, returning an instance of <see cref="TResponse" /> that has been
         ///     deserialized from JSON.
         /// </summary>
         /// <typeparam name="TResponse"></typeparam>
@@ -281,7 +341,6 @@ namespace BusinessIntegrationClient
         /// <param name="relativeUrl"></param>
         public void Delete(string relativeUrl)
         {
-            //DeleteAsync(relativeUrl).RunSynchronously();
             SendJsonRequest(HttpMethod.Delete, relativeUrl, string.Empty);
         }
 

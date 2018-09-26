@@ -34,7 +34,12 @@ namespace BusinessIntegrationClient
             if (pageIndex.HasValue)
                 query.Add("pageIndex", pageIndex.ToString());
             if (pageSize.HasValue)
+            {
+                if(pageSize > DefaultPageSize)
+                    throw new ArgumentOutOfRangeException("pageSize", "the pageSize is limited to 200");
+
                 query.Add("pageSize", pageSize.ToString());
+            }
             
             return query;
         }

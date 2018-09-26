@@ -1288,29 +1288,31 @@ namespace BusinessIntegrationClient.Tester
         [Explicit("This test deletes a record, however we can't undelete a record. The Id may not be reused after deleting it.")]
         public void DeleteUser_CreateAndAndDeleteIt_CannotGetAndCannotList()
         {
-            var userName = $"{UserNamePrefix}For_Deletion_3"; //increment the # after succesful test runs, or delete records w/ a RQLCMD script-(see QueryStores + DelStores)
+            var userName =
+                $"{UserNamePrefix}For_Deletion_1"; //increment the # after successful test runs, or delete records w/ a RQLCMD script-(see QueryStores + DelStores)
 
             var user = new User
             {
                 UserName = userName,
                 Email = $"{userName}@compliancemetrix.com",
-                PrimaryPhoneNumber = "858-555-1212",
-                MobilePhoneNumber = "858-555-1212",
-                Title = "Sir",
+                //PrimaryPhoneNumber = "858-555-1212",
+                //MobilePhoneNumber = "858-555-1212",
+                //Title = "Sir",
                 FirstName = "Unit Test",
                 LastName = "User Name For Deletion",
                 SendNewUserNotification = false,
-                HasAllAccess = false,
-                Profiles = new List<string> { _defaultProfileId },
-                ContactTypes = new List<string> { _defaultContactTypeId },
-                PhysicalAddress = new Address
-                {
-                    Address1 = "123 Main St",
-                    City = "San Diego",
-                    StateProvinceCode = "CA",
-                    ZipCode = "92109",
-                    CountryCode = "US"
-                },
+                HasAllAccess = true,
+                //Profiles = new List<string> { _defaultProfileId },
+                Profiles = new List<string> {"Audit Manager", "Auditor"},
+                //ContactTypes = new List<string> { _defaultContactTypeId },
+                //PhysicalAddress = new Address
+                //{
+                //    Address1 = "123 Main St",
+                //    City = "San Diego",
+                //    StateProvinceCode = "CA",
+                //    ZipCode = "92109",
+                //    CountryCode = "US"
+                //},
             };
 
 
@@ -1320,7 +1322,7 @@ namespace BusinessIntegrationClient.Tester
 
             Assert.IsNotNull(userAfterPost, "Should be able to GET an asset after POSTing it...");
 
-            var allUsersAfterPost = _api.ListUsers();
+            var allUsersAfterPost = _api.ListAllUsers();
 
             Assert.That(allUsersAfterPost.Select(a => a.UserName).ToList(),
                 Has.Some.Contains(userToDelete.UserName));
@@ -1328,17 +1330,76 @@ namespace BusinessIntegrationClient.Tester
             _api.DeleteUser(userName);
 
             //should get error 404 - not found
-            var ex = Assert.Throws<HttpRequestException>(() => _api.GetUser(userName));
+            var ex = Assert.Throws<HttpRequestException>(() =>
+            {
+                _api.GetUser(userName);
+            });
 
             Assert.That(ex.Message, Is.StringContaining("404"));
 
             //should not be listed either
-            var allUsersAfterDelete = _api.ListUsers();
+            var allUsersAfterDelete = _api.ListAllUsers();
 
             Assert.That(allUsersAfterDelete.Select(a => a.UserName).ToList(),
                 Has.None.Contains(userName));
         }
 
+        [TestCase("For_Deletion_1")]
+        [TestCase("For_Deletion_2")]
+        [TestCase("For_Deletion_3")]
+        [TestCase("For_Deletion_4")]
+        [TestCase("For_Deletion_5")]
+        [TestCase("For_Deletion_6")]
+        [TestCase("For_Deletion_7")]
+        [TestCase("For_Deletion_8")]
+        [TestCase("For_Deletion_9")]
+        [TestCase("For_Deletion_10")]
+        [TestCase("For_Deletion_11")]
+        [TestCase("For_Deletion_12")]
+        [Explicit("This test deletes a record, however we can't undelete a record. The Id may not be reused after deleting it.")]
+        public void DeleteUser_CreateAndAndDeleteIt(string userNameSuffix)
+        {
+            var userName = $"{UserNamePrefix}{userNameSuffix}"; //increment the # after successful test runs, or delete records w/ a RQLCMD script-(see QueryStores + DelStores)
+
+            var user = new User
+            {
+                UserName = userName,
+                Email = $"{userName}@compliancemetrix.com",
+                //PrimaryPhoneNumber = "858-555-1212",
+                //MobilePhoneNumber = "858-555-1212",
+                //Title = "Sir",
+                FirstName = "Unit Test",
+                LastName = "User Name For Deletion",
+                SendNewUserNotification = false,
+                HasAllAccess = true,
+                //Profiles = new List<string> { _defaultProfileId },
+                Profiles = new List<string> { "Audit Manager", "Auditor"},
+                //ContactTypes = new List<string> { _defaultContactTypeId },
+                //PhysicalAddress = new Address
+                //{
+                //    Address1 = "123 Main St",
+                //    City = "San Diego",
+                //    StateProvinceCode = "CA",
+                //    ZipCode = "92109",
+                //    CountryCode = "US"
+                //},
+            };
+
+
+            var userToDelete = _api.PostUser(user);
+
+            var userAfterPost = _api.GetUser(userName);
+
+            _api.DeleteUser(userName);
+
+            //should get error 404 - not found
+            var ex = Assert.Throws<HttpRequestException>(() =>
+            {
+                _api.GetUser(userName);
+            });
+
+            Assert.That(ex.Message, Is.StringContaining("404"));
+        }
 
         [Test]
         public void Hierarchies_CanUseIndexer()

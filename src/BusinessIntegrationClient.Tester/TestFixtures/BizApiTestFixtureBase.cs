@@ -55,7 +55,8 @@ namespace BusinessIntegrationClient.Tester.TestFixtures
                 //for local dev:
                 //UseSsl = false,
                 //Port = 8080
-                UserAgent = "Unit Tests/1.0"
+                UserAgent = "Unit Tests/1.0",
+                RequestTimeout = TimeSpan.FromMinutes(60)//<-- time enough to debug.
             };
         }
 
